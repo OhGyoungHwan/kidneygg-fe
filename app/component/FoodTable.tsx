@@ -4,13 +4,14 @@ import {
   MouseEvent,
   SetStateAction,
   useCallback,
+  useEffect,
   useState,
 } from "react";
 import { PAGE_SIZE, PAGINATION_MAX_SIZE, foodHeaderToKor } from "../constdata";
 import { Food, Nutrition } from "../interface";
 import { getKeys } from "../utile";
-import { useAppDispatch } from "../redux/hooks";
-import { addFood, deleteFood } from "../redux/features/foodSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { addFoodList } from "../redux/features/dietSlice";
 
 function PagiNation({
   pagiNationLenght,
@@ -64,6 +65,8 @@ function PagiNation({
 export default function FoodTable({ foodList }: { foodList: Food[] }) {
   const [pageIdx, setPageIdx] = useState(0);
   const [tableList, setTableList] = useState(foodList);
+  const [query, setQuery] = useState("");
+  const [checkedList, setCheckedList] = useState<Food[]>([]);
   const [sortMode, setSortMode] = useState<{
     thName: keyof Nutrition | "foodid";
     mode: 1 | -1 | 0;
@@ -71,10 +74,19 @@ export default function FoodTable({ foodList }: { foodList: Food[] }) {
   const dispatch = useAppDispatch();
   const onChecked = useCallback(
     (e: ChangeEvent<HTMLInputElement>, food: Food) => {
-      e.target.checked ? dispatch(addFood(food)) : dispatch(deleteFood(food));
+      e.target.checked
+        ? setCheckedList((tempList) => [...tempList, food])
+        : setCheckedList((tempList) =>
+            [...tempList].filter(
+              (checkedFood) => checkedFood.foodid !== food.foodid
+            )
+          );
     },
     [foodList]
   );
+  const addDiet = () => {
+    dispatch(addFoodList(checkedList));
+  };
   const onClickHead = useCallback(
     (thName: keyof Nutrition) => {
       let tempTableList = [...foodList];
@@ -99,14 +111,34 @@ export default function FoodTable({ foodList }: { foodList: Food[] }) {
     },
     [tableList, foodList, sortMode]
   );
+  useEffect(() => {
+    query === ""
+      ? setTableList([...foodList])
+      : setTableList([
+          ...foodList.filter((food) =>
+            food.name
+              .toLowerCase()
+              .replace(/\s+/g, "")
+              .includes(query.toLowerCase().replace(/\s+/g, ""))
+          ),
+        ]);
+  }, [query]);
 
   return (
     <>
+      <div>
+        <input
+          placeholder="검색"
+          onChange={(e) => setQuery(e.target.value)}
+          value={query}
+        />
+        <button onClick={addDiet}>식단 추가</button>
+      </div>
       <table>
         <thead>
           <tr>
             <th></th>
-            {getKeys(tableList[0]).map((thName) =>
+            {getKeys(foodList[0]).map((thName) =>
               thName === "foodid" ||
               thName === "categorie" ||
               thName === "name" ? (

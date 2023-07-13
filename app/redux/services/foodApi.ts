@@ -1,4 +1,4 @@
-import { Food } from "@/app/interface";
+import { Diet, Food } from "@/app/interface";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const foodApi = createApi({
