@@ -12,6 +12,7 @@ import { Food, Nutrition } from "../interface";
 import { getKeys } from "../utile";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { addFoodList } from "../redux/features/dietSlice";
+import { addDishList } from "../redux/features/dishSlice";
 
 function PagiNation({
   pagiNationLenght,
@@ -87,6 +88,9 @@ export default function FoodTable({ foodList }: { foodList: Food[] }) {
   const addDiet = () => {
     dispatch(addFoodList(checkedList));
   };
+  const addDish = () => {
+    dispatch(addDishList(checkedList));
+  };
   const onClickHead = useCallback(
     (thName: keyof Nutrition) => {
       let tempTableList = [...foodList];
@@ -133,6 +137,7 @@ export default function FoodTable({ foodList }: { foodList: Food[] }) {
           value={query}
         />
         <button onClick={addDiet}>식단 추가</button>
+        <button onClick={addDish}>요리 추가</button>
       </div>
       <table>
         <thead>

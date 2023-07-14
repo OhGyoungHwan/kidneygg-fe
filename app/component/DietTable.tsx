@@ -41,8 +41,8 @@ export default function DietTable({}: {}) {
   );
 
   const onClickX = useCallback(
-    (foodid: number) => {
-      dispatch(deleteFoodList(foodid));
+    (idx: number) => {
+      dispatch(deleteFoodList(idx));
     },
     [foodList]
   );
@@ -98,7 +98,7 @@ export default function DietTable({}: {}) {
         </thead>
         <tbody>
           {tableList?.map((food, idx) => (
-            <tr key={food.foodid}>
+            <tr key={`${food.foodid}:${idx}`}>
               <td>{food.foodid}</td>
               <td>{food.name}</td>
               <td>{food.categorie}</td>
@@ -117,7 +117,7 @@ export default function DietTable({}: {}) {
                 />
               </td>
               <td>
-                <button onClick={(e) => onClickX(food.foodid)}>X</button>
+                <button onClick={(e) => onClickX(idx)}>X</button>
               </td>
             </tr>
           ))}

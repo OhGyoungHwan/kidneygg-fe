@@ -4,14 +4,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface InitialState {
   userid: number;
   title: string;
-  detaile: string;
+  detail: string;
   foodList: Food[];
 }
 
 const initialState: InitialState = {
   userid: 1,
   title: "",
-  detaile: "",
+  detail: "",
   foodList: [],
 };
 
@@ -24,7 +24,7 @@ export const dishSlice = createSlice({
     },
     deleteDishList: (state, action: PayloadAction<number>) => {
       state.foodList = state.foodList.filter(
-        (food) => food.foodid !== action.payload
+        (food, idx) => idx !== action.payload
       );
     },
   },

@@ -26,7 +26,7 @@ export const dietSlice = createSlice({
     },
     deleteFoodList: (state, action: PayloadAction<number>) => {
       state.foodList = state.foodList.filter(
-        (food) => food.foodid !== action.payload
+        (food,idx) => idx !== action.payload
       );
     },
   },

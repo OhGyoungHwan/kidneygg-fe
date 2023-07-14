@@ -29,7 +29,20 @@ export interface PostDiet {
 
 export interface PostDish {
   userid: number;
-  name: string;
-  detaile: string;
+  title: string;
+  detail: string;
   foodList: { id: number; weight: number }[];
+}
+
+export interface DishDetail {
+  dishid: number;
+  userid: number;
+  title: string;
+  hits: number;
+  detail: string;
+  foodlist: {
+    dishid: number;
+    foodid: Food;
+    weight: number;
+  }[];
 }
