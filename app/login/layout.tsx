@@ -4,8 +4,8 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "KidneyGG | 식재료 검색",
-  description: "KidneyGG 식재료 검색 이름으로 쉽게 찾는 식재료",
+  title: "KidneyGG | 로그인",
+  description: "KidneyGG 로그인",
 };
 
 export default function RootLayout({

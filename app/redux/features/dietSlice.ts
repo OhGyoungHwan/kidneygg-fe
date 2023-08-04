@@ -21,17 +21,17 @@ export const dietSlice = createSlice({
   name: "food",
   initialState,
   reducers: {
-    addFoodList: (state, action: PayloadAction<Food[]>) => {
+    addDietList: (state, action: PayloadAction<Food[]>) => {
       state.foodList = [...state.foodList, ...action.payload];
     },
-    deleteFoodList: (state, action: PayloadAction<number>) => {
+    deleteDietList: (state, action: PayloadAction<number>) => {
       state.foodList = state.foodList.filter(
-        (food,idx) => idx !== action.payload
+        (food, idx) => idx !== action.payload
       );
     },
   },
 });
 
-export const { addFoodList, deleteFoodList } = dietSlice.actions;
+export const { addDietList, deleteDietList } = dietSlice.actions;
 
 export default dietSlice.reducer;

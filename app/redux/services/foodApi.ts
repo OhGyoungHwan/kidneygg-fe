@@ -1,20 +1,18 @@
-import { Diet, Food } from "@/app/interface";
+import { ResponseFood, queryFood } from "@/app/interface";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const foodApi = createApi({
   reducerPath: "foodApi",
   refetchOnFocus: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/kidney/food",
+    baseUrl: "http://localhost:8000/food/",
   }),
   endpoints: (builder) => ({
-    getFoods: builder.query<Food[], null>({
-      query: () => "",
-    }),
-    getFoodByName: builder.query<Food[], { name: string }>({
-      query: ({ name }) => `?name=${name}`,
+    getFoods: builder.query<ResponseFood, queryFood>({
+      query: ({ page, search, ordering }) =>
+        `?page=${page}&search=${search}&ordering=${ordering}`,
     }),
   }),
 });
 
-export const { useGetFoodsQuery, useGetFoodByNameQuery } = foodApi;
+export const { useGetFoodsQuery } = foodApi;

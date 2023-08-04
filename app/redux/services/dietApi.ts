@@ -5,7 +5,7 @@ export const dietApi = createApi({
   reducerPath: "dietApi",
   refetchOnFocus: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/kidney/diet",
+    baseUrl: "http://127.0.0.1:8000/diet/",
   }),
   endpoints: (builder) => ({
     addDiet: builder.mutation<PostDiet, PostDiet>({

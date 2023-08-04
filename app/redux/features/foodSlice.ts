@@ -14,11 +14,12 @@ export const foodSlice = createSlice({
   initialState,
   reducers: {
     addFood: (state, action: PayloadAction<Food>) => {
-      state.foodList.push(action.payload);
+      !state.foodList.find((food) => food.no == action.payload.no) &&
+        state.foodList.push(action.payload);
     },
     deleteFood: (state, action: PayloadAction<Food>) => {
       state.foodList = state.foodList.filter(
-        (food) => food.foodid !== action.payload.foodid
+        (food) => food.no !== action.payload.no
       );
     },
   },

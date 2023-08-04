@@ -1,187 +1,159 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  MouseEvent,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import { PAGE_SIZE, PAGINATION_MAX_SIZE, foodHeaderToKor } from "../constdata";
-import { Food, Nutrition } from "../interface";
+"use client";
+import { ChangeEvent, MouseEvent, useState } from "react";
+import { Food } from "../interface";
+import { Providers } from "../redux/provider";
+import { useGetFoodsQuery } from "../redux/services/foodApi";
 import { getKeys } from "../utile";
+import { PAGINATION_SIZE, TABLE_ROW_SIZE, foodHeaderToKor } from "../constdata";
+import { addFood, deleteFood } from "../redux/features/foodSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { addFoodList } from "../redux/features/dietSlice";
-import { addDishList } from "../redux/features/dishSlice";
+import { addDietList } from "../redux/features/dietSlice";
 
-function PagiNation({
-  pagiNationLenght,
-  setPageIdx,
-  pageIdx,
-}: {
-  pagiNationLenght: number;
-  setPageIdx: Dispatch<SetStateAction<number>>;
-  pageIdx: number;
-}) {
-  let pagiNationStart = 0;
-  const pagiNationSize =
-    pagiNationLenght >= 10 ? PAGINATION_MAX_SIZE : pagiNationLenght;
-  switch (true) {
-    // idx가 맨앞 ~ pagiNationSize/2 -> 보여지는 page는 앞에서 부터 10개 고정
-    case pageIdx - Math.floor(pagiNationSize / 2) < 0:
-      pagiNationStart = 0;
-      break;
-    // idx가 맨뒤 ~ 맨뒤 - pagiNationSize/2 -> 보여지는 page는 뒤에서 부터 10개 고정
-    case pageIdx - Math.floor(pagiNationSize / 2) >
-      pagiNationLenght - pagiNationSize:
-      pagiNationStart = pagiNationLenght - pagiNationSize;
-      break;
-    // 보통의 경우 idx앞뒤로 pagiNationSize/2 만큼 보여짐
-    default:
-      pagiNationStart = pageIdx - Math.floor(pagiNationSize / 2);
-  }
-  return (
+function Table() {
+  const dispatch = useAppDispatch();
+  const foodList = useAppSelector((state) => state.foodReducer.foodList);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
+  const [ordering, setOrdering] = useState("");
+  const [paginationStart, setPaginationStart] = useState(0);
+
+  const { data, isLoading } = useGetFoodsQuery({
+    page: page,
+    search: search,
+    ordering: ordering,
+  });
+  const { count, results } = data ? data : { count: 0, results: [] as Food[] };
+
+  const onClickPrev = (e: MouseEvent<HTMLButtonElement>) =>
+    Math.ceil(count / TABLE_ROW_SIZE) > PAGINATION_SIZE &&
+    paginationStart != 0 &&
+    (setPage((num) => (Math.ceil(num / PAGINATION_SIZE) - 1) * PAGINATION_SIZE),
+    setPaginationStart((num) => num - PAGINATION_SIZE));
+
+  const onClickNext = (e: MouseEvent<HTMLButtonElement>) =>
+    Math.ceil(count / TABLE_ROW_SIZE) > PAGINATION_SIZE &&
+    paginationStart != Math.floor(count / TABLE_ROW_SIZE) &&
+    (setPage((num) => Math.ceil(num / PAGINATION_SIZE) * PAGINATION_SIZE + 1),
+    setPaginationStart((num) => num + PAGINATION_SIZE));
+
+  const onClickStart = (e: MouseEvent<HTMLButtonElement>) =>
+    Math.ceil(count / TABLE_ROW_SIZE) > PAGINATION_SIZE &&
+    (setPage(1), setPaginationStart(0));
+
+  const onClickEnd = (e: MouseEvent<HTMLButtonElement>) =>
+    Math.ceil(count / TABLE_ROW_SIZE) > PAGINATION_SIZE &&
+    (setPage(Math.ceil(count / TABLE_ROW_SIZE)),
+    setPaginationStart(Math.floor(count / TABLE_ROW_SIZE)));
+
+  const onClickNumber = (e: MouseEvent<HTMLButtonElement>) =>
+    setPage(parseInt(e.currentTarget.value) + 1);
+
+  const onChangeQuery = (e: ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.currentTarget.value);
+
+  const keyUpEnterQuery = () => {
+    setSearch(query);
+  };
+
+  const onClickSearch = () => setSearch(query);
+
+  const onClickHeader = (header: string) => {
+    switch (true) {
+      case !ordering.includes(header):
+        setOrdering("-" + header);
+        break;
+      case ordering == "-" + header:
+        setOrdering(header);
+        break;
+      case ordering == header:
+        setOrdering("");
+        break;
+    }
+  };
+
+  const onClickRow = (food: Food) => dispatch(addFood(food));
+
+  const onClickLi = (food: Food) => dispatch(deleteFood(food));
+
+  const onClickAddDiet = () => dispatch(addDietList(foodList));
+
+  return isLoading ? (
+    <div>스켈레톤</div>
+  ) : (
     <div>
-      <button key={`<<pagination`} onClick={(e) => setPageIdx(0)}>
-        {"<<"}
-      </button>
-      {[...Array(pagiNationSize).keys()].map((idx) => (
-        <button
-          key={`${pagiNationStart + idx}pagination`}
-          onClick={(e) => setPageIdx(pagiNationStart + idx)}
-        >
-          {pagiNationStart + idx + 1}
-        </button>
-      ))}
-      <button
-        key={`>>pagination`}
-        onClick={(e) => setPageIdx(pagiNationLenght - 1)}
-      >
-        {">>"}
-      </button>
+      <table>
+        <thead>
+          <tr>
+            <td></td>
+            {getKeys(results[0]).map((key) => (
+              <td key={key} onClick={(e) => onClickHeader(key)}>
+                {foodHeaderToKor[key]}
+              </td>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {results.map((food) => (
+            <tr key={food.no}>
+              <td>
+                <button
+                  onClick={(e) => {
+                    onClickRow(food);
+                  }}
+                >
+                  +
+                </button>
+              </td>
+              {getKeys(results[0]).map((key) => (
+                <td key={key + food.no}>{food[key]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div>
+        <button onClick={onClickStart}>{"<<"}</button>
+        <button onClick={onClickPrev}>{"<"}</button>
+        {[...Array(Math.ceil(count / TABLE_ROW_SIZE)).keys()]
+          .map((idx) => (
+            <button onClick={onClickNumber} key={idx} value={idx}>
+              {idx}
+            </button>
+          ))
+          .slice(paginationStart, paginationStart + PAGINATION_SIZE)}
+        <button onClick={onClickNext}>{">"}</button>
+        <button onClick={onClickEnd}>{">>"}</button>
+        <input
+          className="text-gray-900"
+          placeholder="식재료 검색"
+          onChange={onChangeQuery}
+          onKeyUp={(e) => {
+            e.key === "Enter" && keyUpEnterQuery();
+          }}
+        />
+        <button onClick={onClickSearch}>검색</button>
+      </div>
+      <div>
+        <ul>
+          {foodList.map((food) => (
+            <li key={food.no}>
+              <button onClick={(e) => onClickLi(food)}>X</button>
+              {food.name}
+            </li>
+          ))}
+        </ul>
+        <button onClick={onClickAddDiet}>식단에 추가</button>
+        <button onClick={onClickAddDiet}>요리에 추가</button>
+      </div>
     </div>
   );
 }
 
-export default function FoodTable({ foodList }: { foodList: Food[] }) {
-  const [pageIdx, setPageIdx] = useState(0);
-  const [tableList, setTableList] = useState(foodList);
-  const [query, setQuery] = useState("");
-  const [checkedList, setCheckedList] = useState<Food[]>([]);
-  const [sortMode, setSortMode] = useState<{
-    thName: keyof Nutrition | "foodid";
-    mode: 1 | -1 | 0;
-  }>({ thName: "foodid", mode: 1 });
-  const dispatch = useAppDispatch();
-  const onChecked = useCallback(
-    (e: ChangeEvent<HTMLInputElement>, food: Food) => {
-      e.target.checked
-        ? setCheckedList((tempList) => [...tempList, food])
-        : setCheckedList((tempList) =>
-            [...tempList].filter(
-              (checkedFood) => checkedFood.foodid !== food.foodid
-            )
-          );
-    },
-    [foodList]
-  );
-  const addDiet = () => {
-    dispatch(addFoodList(checkedList));
-  };
-  const addDish = () => {
-    dispatch(addDishList(checkedList));
-  };
-  const onClickHead = useCallback(
-    (thName: keyof Nutrition) => {
-      let tempTableList = [...foodList];
-      sortMode.thName === thName
-        ? sortMode.mode === 1
-          ? (tempTableList.sort(
-              (pre, next) => pre[thName] * 100 - next[thName] * 100
-            ),
-            setSortMode({ thName: thName, mode: -1 }))
-          : sortMode.mode === -1
-          ? (tempTableList.sort(
-              (pre, next) => next[thName] * 100 - pre[thName] * 100
-            ),
-            setSortMode({ thName: thName, mode: 0 }))
-          : (tempTableList.sort((pre, next) => pre.foodid - next.foodid),
-            setSortMode({ thName: thName, mode: 1 }))
-        : (tempTableList.sort(
-            (pre, next) => pre[thName] * 100 - next[thName] * 100
-          ),
-          setSortMode({ thName: thName, mode: -1 }));
-      setTableList(tempTableList);
-    },
-    [tableList, foodList, sortMode]
-  );
-  useEffect(() => {
-    query === ""
-      ? setTableList([...foodList])
-      : setTableList([
-          ...foodList.filter((food) =>
-            food.name
-              .toLowerCase()
-              .replace(/\s+/g, "")
-              .includes(query.toLowerCase().replace(/\s+/g, ""))
-          ),
-        ]);
-  }, [query]);
-
+export default function FoodTable() {
   return (
-    <>
-      <div>
-        <input
-          placeholder="검색"
-          onChange={(e) => setQuery(e.target.value)}
-          value={query}
-        />
-        <button onClick={addDiet}>식단 추가</button>
-        <button onClick={addDish}>요리 추가</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            {getKeys(foodList[0]).map((thName) =>
-              thName === "foodid" ||
-              thName === "categorie" ||
-              thName === "name" ? (
-                <th key={thName}>{foodHeaderToKor[thName]}</th>
-              ) : (
-                <th key={thName} onClick={(e) => onClickHead(thName)}>
-                  {foodHeaderToKor[thName]}
-                </th>
-              )
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {tableList
-            .slice(pageIdx * PAGE_SIZE, pageIdx * PAGE_SIZE + PAGE_SIZE)
-            .map((food) => (
-              <tr key={food.foodid}>
-                <td>
-                  <input type="checkbox" onChange={(e) => onChecked(e, food)} />
-                </td>
-                <td>{food.foodid}</td>
-                <td>{food.name}</td>
-                <td>{food.categorie}</td>
-                <td>{food.energy}</td>
-                <td>{food.moisture}</td>
-                <td>{food.protein}</td>
-                <td>{food.phosphorus}</td>
-                <td>{food.potassium}</td>
-                <td>{food.natrium}</td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-      <PagiNation
-        pagiNationLenght={Math.ceil(foodList.length / PAGE_SIZE)}
-        setPageIdx={setPageIdx}
-        pageIdx={pageIdx}
-      />
-    </>
+    <Providers>
+      <Table />
+    </Providers>
   );
 }

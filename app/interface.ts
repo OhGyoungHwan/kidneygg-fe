@@ -8,7 +8,7 @@ export interface Nutrition {
 }
 
 export interface Food extends Nutrition {
-  foodid: number;
+  no: number;
   name: string;
   categorie: string;
 }
@@ -21,7 +21,7 @@ export interface Diet {
 
 export interface PostDiet {
   userid: number;
-  yymmdd: string;
+  created: string;
   threemeals: "breakfast" | "lunch" | "dinner";
   foodList: { id: number; weight: number }[];
   dishList: { id: number; weight: number }[];
@@ -45,4 +45,17 @@ export interface DishDetail {
     foodid: Food;
     weight: number;
   }[];
+}
+
+export interface ResponseFood {
+  count: number;
+  next: string;
+  previous: string;
+  results: Food[];
+}
+
+export interface queryFood {
+  page: number;
+  search: string;
+  ordering: string;
 }

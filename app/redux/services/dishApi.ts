@@ -5,7 +5,7 @@ export const dishApi = createApi({
   reducerPath: "dishApi",
   refetchOnFocus: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/kidney/dish",
+    baseUrl: "http://127.0.0.1:8000/dish/",
   }),
   endpoints: (builder) => ({
     getDishDetailList: builder.query<DishDetail[], null>({
